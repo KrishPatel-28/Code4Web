@@ -28,15 +28,14 @@ You can change these by setting environment variables:
 npm install
 ```
 
-
-### 3. Database Setup
+### 2. Database Setup
 
 Run the SQL scripts in the `db/` directory to set up your database:
 
 1. `db/users.sql` - Creates users table
 2. `db/templates.sql` - Creates templates and purchases tables
 
-### 4. Start Development Server
+### 3. Start Development Server
 
 ```bash
 npm run dev
