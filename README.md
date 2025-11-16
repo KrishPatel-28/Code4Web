@@ -28,22 +28,6 @@ You can change these by setting environment variables:
 npm install
 ```
 
-### 2. Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-
-```env
-# Supabase Configuration
-SUPABASE_URL=your_supabase_url_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
-
-# JWT Secret (generate a random string)
-JWT_SECRET=your_jwt_secret_here
-
-# Admin Credentials (optional - defaults provided)
-ADMIN_EMAIL=admin@code4web.com
-ADMIN_PASSWORD=admin123
-```
 
 ### 3. Database Setup
 
