@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -48,7 +48,7 @@ export default function Dashboard() {
         {/* Sidebar */}
         <aside className="w-64 bg-white border-r border-gray-200 min-h-screen p-6 shadow-sm">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Code4Web</h1>
+           <Link to="/"> <h1 className="text-2xl font-bold text-gray-900">Code4Web</h1></Link>
             <p className="text-sm text-gray-500 mt-1">My Account</p>
           </div>
           <nav className="space-y-2">
@@ -82,7 +82,7 @@ export default function Dashboard() {
         {/* Main Content */}
         <main className="flex-1 p-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome {user?.email ? `, ${user.email.split('@')[0]}` : ''}!</h1>
             <p className="text-gray-600 mt-2">Manage your templates and purchases</p>
           </div>
 

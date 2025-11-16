@@ -39,7 +39,23 @@ export default async function handler(req, res) {
     setAuthCookie(res, token)
     json(res, 200, { id: data.id, email: data.email })
   } catch (e) {
-    const status = e.name === 'ZodError' ? 400 : 500
-    json(res, status, { message: e.message || 'Internal error' })
+    // Handle validation errors
+    if (e.name === 'ZodError') {
+      const errors = e.errors.map(err => {
+        if (err.path[0] === 'email') return 'Please enter a valid email address'
+        if (err.path[0] === 'password') return 'Password must be at least 8 characters long'
+        return err.message
+      })
+      json(res, 400, { message: errors[0] || 'Invalid input' })
+      return
+    }
+    // Handle database errors
+    if (e.code === '23505') { // PostgreSQL unique violation
+      json(res, 409, { message: 'This email is already registered' })
+      return
+    }
+    // Handle other errors
+    console.error('Registration error:', e)
+    json(res, 500, { message: 'An error occurred during registration. Please try again later.' })
   }
 }

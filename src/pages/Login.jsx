@@ -12,31 +12,52 @@ export default function Login() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(form)
-    })
-    if (res.ok) {
-      try {
-        const me = await fetch('/api/me', { credentials: 'include' })
-        if (me.ok) {
-          const data = await me.json()
-          const role = data?.user?.role
-          navigate(role === 'admin' ? '/admin' : '/dashboard')
-        } else {
+    
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(form)
+      })
+      
+      if (res.ok) {
+        try {
+          const me = await fetch('/api/me', { credentials: 'include' })
+          if (me.ok) {
+            const data = await me.json()
+            const role = data?.user?.role
+            navigate(role === 'admin' ? '/admin' : '/dashboard')
+          } else {
+            navigate('/dashboard')
+          }
+        } catch {
           navigate('/dashboard')
         }
-      } catch {
-        navigate('/dashboard')
+      } else {
+        // Try to parse error message from response
+        let errorMessage = 'Login failed. Please check your credentials and try again.'
+        try {
+          const contentType = res.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            const data = await res.json()
+            errorMessage = data.message || errorMessage
+          } else {
+            const text = await res.text()
+            if (text) errorMessage = text
+          }
+        } catch (parseError) {
+          // If parsing fails, use default message
+          console.error('Error parsing response:', parseError)
+        }
+        setError(errorMessage)
       }
+    } catch (networkError) {
+      setError('Network error. Please check your connection and try again.')
+      console.error('Network error:', networkError)
+    } finally {
+      setLoading(false)
     }
-    else {
-      const data = await res.json().catch(() => ({ message: 'Error' }))
-      setError(data.message || 'Login failed')
-    }
-    setLoading(false)
   }
 
   return (
@@ -44,7 +65,7 @@ export default function Login() {
       <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
         <div className="mb-6">
           <div className="text-sm text-gray-500 font-medium">Code4Web</div>
-          <h2 className="mt-1 text-2xl font-bold text-gray-900">Welcome back</h2>
+          <h2 className="mt-1 text-2xl font-bold text-gray-900">Welcome</h2>
           <p className="mt-2 text-sm text-gray-600">Log in to continue building your site.</p>
         </div>
         <form onSubmit={submit} className="space-y-5">
@@ -60,7 +81,11 @@ export default function Login() {
             </div>
             <div className="mt-2 text-xs text-gray-500"><Link to="#" className="underline">Forgot password?</Link></div>
           </div>
-          {error && <div className="text-sm text-red-600">{error}</div>}
+          {error && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
           <button type="submit" disabled={loading} className="w-full h-11 rounded-xl bg-black text-white font-medium hover:bg-gray-900 transition disabled:opacity-70">{loading ? 'Signing in...' : 'Log in'}</button>
         </form>
         <div className="mt-6 text-sm text-gray-700">No account? <Link to="/register" className="underline">Create one</Link></div>

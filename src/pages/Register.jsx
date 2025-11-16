@@ -12,21 +12,53 @@ export default function Register() {
   const submit = async (e) => {
     e.preventDefault()
     setError('')
-    if (form.password.length < 8) { setError('Password must be at least 8 characters'); return }
-    if (form.password !== form.confirm) { setError('Passwords do not match'); return }
-    setLoading(true)
-    const res = await fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email: form.email, password: form.password })
-    })
-    if (res.ok) navigate('/dashboard')
-    else {
-      const data = await res.json().catch(() => ({ message: 'Error' }))
-      setError(data.message || 'Registration failed')
+    
+    // Client-side validation
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters long')
+      return
     }
-    setLoading(false)
+    if (form.password !== form.confirm) {
+      setError('Passwords doesnt match')
+      return
+    }
+    
+    setLoading(true)
+    
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: form.email, password: form.password })
+      })
+      
+      if (res.ok) {
+        navigate('/dashboard')
+      } else {
+        // Try to parse error message from response
+        let errorMessage = 'Registration failed. Please try again.'
+        try {
+          const contentType = res.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            const data = await res.json()
+            errorMessage = data.message || errorMessage
+          } else {
+            const text = await res.text()
+            if (text) errorMessage = text
+          }
+        } catch (parseError) {
+          // If parsing fails, use default message
+          console.error('Error parsing response:', parseError)
+        }
+        setError(errorMessage)
+      }
+    } catch (networkError) {
+      setError('Network error. Please check your connection and try again.')
+      console.error('Network error:', networkError)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -65,7 +97,11 @@ export default function Register() {
               </button>
             </div>
           </div>
-          {error && <div className="text-sm text-red-600">{error}</div>}
+          {error && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
           <button type="submit" disabled={loading} className="w-full rounded-lg bg-black text-white py-2 disabled:opacity-70">{loading ? 'Creating...' : 'Sign up'}</button>
         </form>
         <div className="mt-4 text-sm">Already have an account? <Link to="/login" className="underline">Log in</Link></div>
